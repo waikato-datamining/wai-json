@@ -71,6 +71,18 @@ class JSONObject(JSONValidatedBiserialisable[SelfType], StaticJSONValidator):
         for name, value in initial_values.items():
             self.set_property(name, value)
 
+    def has_property(self, name: str) -> bool:
+        """
+        Whether this object has a property with the given name. If the object
+        allows additional properties, this will include additional properties
+        which currently have values, and required/optional properties regardless
+        of value.
+
+        :param name:    The property name.
+        :return:        True if the object has the property.
+        """
+        return name in self._property_values or name in self._optional_properties
+
     def get_property(self, name: str) -> PropertyValueType:
         """
         Gets the value of a property by name.
