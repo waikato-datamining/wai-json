@@ -1,4 +1,4 @@
-from typing import Dict, TypeVar, List, Any, Union, Optional, Iterator
+from typing import Dict, TypeVar, List, Any, Union, Optional, Iterator, Tuple
 
 from ..error import JSONValidationError, RequiredDisallowed, JSONPropertyError
 from ..raw import RawJSONElement, RawJSONObject
@@ -139,7 +139,7 @@ class JSONObject(JSONValidatedBiserialisable[SelfType], StaticJSONValidator):
         """
         self.set_property(name, Absent)
 
-    def iterate_properties(self) -> Iterator[bool, str, PropertyValueType]:
+    def iterate_properties(self) -> Iterator[Tuple[bool, str, PropertyValueType]]:
         """
         Iterates through all properties of the object.
 
