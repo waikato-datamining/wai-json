@@ -1,4 +1,4 @@
-from typing import Dict, TypeVar, List, Any, Union, Optional
+from typing import Dict, TypeVar, List, Any, Union, Optional, Iterator
 
 from ..error import JSONValidationError, RequiredDisallowed, JSONPropertyError
 from ..raw import RawJSONElement, RawJSONObject
@@ -138,6 +138,28 @@ class JSONObject(JSONValidatedBiserialisable[SelfType], StaticJSONValidator):
         :param name:    The property's name.
         """
         self.set_property(name, Absent)
+
+    def iterate_properties(self) -> Iterator[bool, str, PropertyValueType]:
+        """
+        Iterates through all properties of the object.
+
+        :return:    A triple consisting of:
+                     - Whether the property is optional.
+                     - The property's name.
+                     - The property's value.
+        """
+        # Required properties first
+        for name in self._required_properties:
+            yield False, name, self.get_property(name)
+
+        # Optional properties
+        for name in self._required_properties:
+            yield True, name, self.get_property(name)
+
+        # Additional properties
+        for name, value in self._property_values.items():
+            if name not in self._required_properties and name not in self._optional_properties:
+                yield True, name, value
 
     @classmethod
     def allows_additional_properties(cls) -> bool:
