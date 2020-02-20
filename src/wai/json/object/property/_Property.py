@@ -68,7 +68,7 @@ class Property(StaticJSONValidator, ABC):
 
     def __set_name__(self, owner, name: str):
         # Can't reset the name
-        if self._attribute_name != "":
+        if self._attribute_name != "" and self._attribute_name != name:
             raise JSONPropertyError(f"Attempted to reassign property '{self._name}' to attribute '{name}' "
                                     f"(already assigned to attribute '{self._attribute_name}')")
 
