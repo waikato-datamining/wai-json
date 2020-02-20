@@ -1,7 +1,7 @@
 Changelog
 =========
 
-0.0.2 (2020-02-20)
+0.0.2 (2020-02-21)
 -------------------
 
 - Added the ability to create a JSONObject property directly from the class.
