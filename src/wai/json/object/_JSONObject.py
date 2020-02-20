@@ -171,7 +171,7 @@ class JSONObject(JSONValidatedBiserialisable[SelfType], StaticJSONValidator):
         return cls._additional_property is not None
 
     @classmethod
-    def as_property(cls, name: Optional[str] = None, optional: bool = False) -> JSONObjectProperty:
+    def as_property(cls, name: Optional[str] = None, *, optional: bool = False) -> JSONObjectProperty:
         """
         Creates a property (e.g. for another JSON object) which takes instances
         of this type of JSON object as values.
