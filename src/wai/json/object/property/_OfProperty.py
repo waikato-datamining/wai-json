@@ -1,5 +1,5 @@
 from abc import abstractmethod, ABC
-from typing import Tuple, List, Iterable, Callable, Optional
+from typing import Tuple, List, Iterable, Callable, Optional, Any
 
 from ...error import JSONPropertyError, OptionalDisallowed, OfPropertySelectionError
 from ...schema import JSONSchema
@@ -46,7 +46,7 @@ class OfProperty(Property, ABC):
             )
         )
 
-    def _validate_value(self, value) -> PropertyValueType:
+    def _validate_value(self, value: Any) -> PropertyValueType:
         # Find the properties this value is valid for
         values = []
         for prop in self._sub_properties:

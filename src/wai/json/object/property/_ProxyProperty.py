@@ -1,11 +1,12 @@
 from abc import ABC
-from typing import Type, Optional
+from typing import Type, Optional, Any
 
 from wai.common.abc import is_abstract_class
 
 from ...error import JSONPropertyError
 from ...schema import JSONSchema
 from ...serialise import JSONValidatedBiserialisable
+from .._typing import PropertyValueType
 from ._Property import Property
 
 
@@ -42,7 +43,7 @@ class ProxyProperty(Property, ABC):
         # Use the value-type's schema
         return self._type.get_json_validation_schema()
 
-    def _validate_value(self, value):
+    def _validate_value(self, value: Any) -> PropertyValueType:
         # Must be an instance of the correct type, or JSON deserialisable to the correct type
         if not isinstance(value, self._type):
             try:

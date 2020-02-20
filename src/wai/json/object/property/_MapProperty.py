@@ -1,5 +1,6 @@
-from typing import Optional
+from typing import Optional, Any
 
+from .._typing import PropertyValueType
 from .proxies import MapProxy
 from ._Property import Property
 from ._ProxyProperty import ProxyProperty
@@ -21,7 +22,7 @@ class MapProperty(ProxyProperty):
             optional=optional
         )
 
-    def _validate_value(self, value):
+    def _validate_value(self, value: Any) -> PropertyValueType:
         # Convert other map-proxies and raw dictionaries to our proxy-type
         if ((isinstance(value, MapProxy) and not isinstance(value, self.proxy_type))
                 or isinstance(value, dict)):

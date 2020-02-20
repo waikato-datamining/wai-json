@@ -1,5 +1,6 @@
-from typing import Optional
+from typing import Optional, Any
 
+from .._typing import PropertyValueType
 from .proxies import ArrayProxy
 from ._Property import Property
 from ._ProxyProperty import ProxyProperty
@@ -29,7 +30,7 @@ class ArrayProperty(ProxyProperty):
             optional=optional
         )
 
-    def _validate_value(self, value):
+    def _validate_value(self, value: Any) -> PropertyValueType:
         # Convert other proxy-arrays and raw lists/tuples to our proxy-type
         if ((isinstance(value, ArrayProxy) and not isinstance(value, self.proxy_type))
                 or isinstance(value, list)
