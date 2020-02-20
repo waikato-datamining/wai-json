@@ -19,3 +19,14 @@ class ConstantProperty(RawProperty):
             schema=constant(value),
             optional=optional
         )
+
+        self._value = value
+
+    @property
+    def value(self) -> RawJSONPrimitive:
+        """
+        Gets the constant value this property takes.
+
+        :return:    The constant value.
+        """
+        return self._value
