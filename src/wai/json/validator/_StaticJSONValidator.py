@@ -1,5 +1,4 @@
 from abc import ABC
-from functools import lru_cache
 
 from wai.common.meta import instanceoptionalmethod
 
@@ -13,11 +12,15 @@ class StaticJSONValidator(JSONValidator, ABC):
     constant for the lifetime of the class/object.
     """
     @instanceoptionalmethod
-    @lru_cache(maxsize=None)
     def get_json_validation_schema(self) -> JSONSchema:
-        return super().get_json_validation_schema()
+        if not hasattr(self, "__json_validation_schema"):
+            setattr(self, "__json_validation_schema", super().get_json_validation_schema())
+
+        return getattr(self, "__json_validation_schema")
 
     @instanceoptionalmethod
-    @lru_cache(maxsize=None)
     def get_validator(self):
-        return super().get_validator()
+        if not hasattr(self, "__validator"):
+            setattr(self, "__validator", super().get_validator())
+
+        return getattr(self, "__validator")
