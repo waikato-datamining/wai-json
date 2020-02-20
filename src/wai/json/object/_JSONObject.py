@@ -1,4 +1,8 @@
-from typing import Dict, TypeVar, List, Any, Union, Optional, Iterator, Tuple
+from enum import Enum, auto
+from typing import Dict, TypeVar, List, Any, Union, Optional, Iterator
+
+from wai.common.meta import instanceoptionalmethod
+from wai.common.meta.dynamic_defaults import with_dynamic_defaults, dynamic_default
 
 from ..error import JSONValidationError, RequiredDisallowed, JSONPropertyError
 from ..raw import RawJSONElement, RawJSONObject
@@ -44,6 +48,15 @@ def additional_properties_validation_as_property(validation: Union[JSONSchema, P
     return RawProperty(schema=validation, optional=True)
 
 
+class PropertyOptionality(Enum):
+    """
+    Enumeration of the types of optionality a property can have.
+    """
+    REQUIRED = auto()
+    OPTIONAL = auto()
+    ADDITIONAL = auto()
+
+
 class JSONObject(JSONValidatedBiserialisable[SelfType], StaticJSONValidator):
     """
     Base class for Python representations of JSON-format configuration files.
@@ -62,6 +75,9 @@ class JSONObject(JSONValidatedBiserialisable[SelfType], StaticJSONValidator):
         # Create the property values container
         self._property_values: Dict[str, PropertyValueType] = {}
 
+        # Attempt to convert attribute names to property names
+        self._attribute_to_property_names(initial_values)
+
         # Make sure all required properties have values
         for required_property in self._required_properties:
             if required_property not in initial_values:
@@ -71,6 +87,7 @@ class JSONObject(JSONValidatedBiserialisable[SelfType], StaticJSONValidator):
         for name, value in initial_values.items():
             self.set_property(name, value)
 
+    @instanceoptionalmethod
     def has_property(self, name: str) -> bool:
         """
         Whether this object has a property with the given name. If the object
@@ -81,7 +98,14 @@ class JSONObject(JSONValidatedBiserialisable[SelfType], StaticJSONValidator):
         :param name:    The property name.
         :return:        True if the object has the property.
         """
-        return name in self._property_values or name in self._optional_properties
+        # If called on the class, only corresponds to defined properties
+        has_property = name in self._required_properties or name in self._optional_properties
+
+        # If called on the instance, also check if an additional property has the name
+        if instanceoptionalmethod.is_instance(self):
+            has_property = has_property or name in self._property_values
+
+        return has_property
 
     def get_property(self, name: str) -> PropertyValueType:
         """
@@ -139,27 +163,42 @@ class JSONObject(JSONValidatedBiserialisable[SelfType], StaticJSONValidator):
         """
         self.set_property(name, Absent)
 
-    def iterate_properties(self) -> Iterator[Tuple[bool, str, PropertyValueType]]:
+    @classmethod
+    def get_property_optionality(cls, name: str) -> PropertyOptionality:
         """
-        Iterates through all properties of the object.
+        Gets the optionality of the named property.
 
-        :return:    A triple consisting of:
-                     - Whether the property is optional.
-                     - The property's name.
-                     - The property's value.
+        :param name:    The property name.
+        :return:        The property's optionality.
+        """
+        # Get the property
+        prop = cls._get_property(name)
+
+        return (PropertyOptionality.ADDITIONAL if prop is cls._additional_property else
+                PropertyOptionality.OPTIONAL if prop.is_optional else
+                PropertyOptionality.REQUIRED)
+
+    @instanceoptionalmethod
+    def iterate_properties(self) -> Iterator[str]:
+        """
+        Iterates through all properties of the object, including additional
+        properties if called on the instance.
+
+        :return:    An iterator over the property names.
         """
         # Required properties first
         for name in self._required_properties:
-            yield False, name, self.get_property(name)
+            yield name
 
         # Optional properties
         for name in self._required_properties:
-            yield True, name, self.get_property(name)
+            yield name
 
-        # Additional properties
-        for name, value in self._property_values.items():
-            if name not in self._required_properties and name not in self._optional_properties:
-                yield True, name, value
+        # Additional properties (if called on the instance)
+        if instanceoptionalmethod.is_instance(self):
+            for name in self._property_values:
+                if name not in self._required_properties and name not in self._optional_properties:
+                    yield name
 
     @classmethod
     def allows_additional_properties(cls) -> bool:
@@ -275,6 +314,45 @@ class JSONObject(JSONValidatedBiserialisable[SelfType], StaticJSONValidator):
         return defined_properties
 
     @classmethod
+    def _attribute_to_property_names(cls, values: Dict[str, Any]):
+        """
+        Tries to convert any initial values specified by attribute name
+        into property names instead. Modifies the dictionary in-place.
+
+        :param values:  The initial values to the constructor.
+        """
+        # Create a mapping from attribute names to property names
+        mapping = {}
+        for key, value in values.items():
+            # Skip defined properties
+            if key in cls._required_properties or key in cls._optional_properties:
+                continue
+
+            # Try and get the attribute the name refers to (if it does so)
+            try:
+                attr = getattr(cls, key, None)
+
+            # If there is no attribute with that name, leave it as an additional property
+            except AttributeError:
+                pass
+
+            # Otherwise see if the attribute is a property, and if so, record the mapping
+            else:
+                if isinstance(attr, Property):
+                    mapping[key] = attr.name
+
+        # Implement the mapping
+        for attribute_name, property_name in mapping.items():
+            # If the property name is already in the values, it's doubly-defined
+            if property_name in values:
+                raise JSONPropertyError(f"Property '{property_name}' was specified twice in "
+                                        f"initial values, once by its property name, and once "
+                                        f"by its attribute name '{attribute_name}'")
+
+            values[property_name] = values[attribute_name]
+            del values[attribute_name]
+
+    @classmethod
     def _additional_properties_validation(cls) -> Union[JSONSchema, Property, None]:
         """
         Gets the schema/property to validate any additional properties set
@@ -283,9 +361,18 @@ class JSONObject(JSONValidatedBiserialisable[SelfType], StaticJSONValidator):
         """
         return DEFAULT_SCHEMA
 
-    def __init_subclass__(cls, **kwargs):
+    @with_dynamic_defaults
+    def __init_subclass__(cls,
+                          programmatic_properties: Dict[str, Property] = dynamic_default(dict),
+                          **kwargs):
         # Perform any super initialisation
         super().__init_subclass__(**kwargs)
+
+        # Hack for adding programmatic properties, as Generic meta-class
+        # stops __set_name__ from being called
+        for name, prop in programmatic_properties.items():
+            setattr(cls, name, prop)
+            prop.__set_name__(cls, name)
 
         # Get all of the defined properties
         defined_properties = cls._get_all_defined_properties()
