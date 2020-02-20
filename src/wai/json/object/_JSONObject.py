@@ -6,7 +6,7 @@ from ..schema import JSONSchema, standard_object, IS_JSON_SCHEMA, IS_JSON_DEFINI
 from ..schema.constants import DEFINITIONS_KEYWORD
 from ..serialise import JSONValidatedBiserialisable
 from ..validator import StaticJSONValidator
-from .property import RawProperty, Property
+from .property import RawProperty, Property, JSONObjectProperty
 from ._typing import Absent, OptionallyPresent, PropertyValueType
 
 # The type of this configuration
@@ -169,6 +169,18 @@ class JSONObject(JSONValidatedBiserialisable[SelfType], StaticJSONValidator):
         :return:    True if the object can contain additional properties.
         """
         return cls._additional_property is not None
+
+    @classmethod
+    def as_property(cls, name: Optional[str] = None, optional: bool = False) -> JSONObjectProperty:
+        """
+        Creates a property (e.g. for another JSON object) which takes instances
+        of this type of JSON object as values.
+
+        :param name:        The name to give the property (default is to inherit the attribute name).
+        :param optional:    Whether the property should be optional.
+        :return:            The property.
+        """
+        return JSONObjectProperty(name, cls, optional=optional)
 
     @classmethod
     def _get_property(cls, name: str) -> Property:
