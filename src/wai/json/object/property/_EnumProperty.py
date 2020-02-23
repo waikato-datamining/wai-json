@@ -1,4 +1,4 @@
-from typing import Iterable, Optional, Tuple, Set
+from typing import Iterable, Optional, FrozenSet
 
 from ...raw import RawJSONPrimitive
 from ...schema import enum
@@ -15,7 +15,7 @@ class EnumProperty(RawProperty):
                  values: Iterable[RawJSONPrimitive] = tuple(),
                  optional: bool = False):
         # Consume the iterable
-        self._values: Set[RawJSONPrimitive] = set(values)
+        self._values: FrozenSet[RawJSONPrimitive] = frozenset(values)
 
         super().__init__(
             name,
@@ -24,10 +24,10 @@ class EnumProperty(RawProperty):
         )
 
     @property
-    def values(self) -> Set[RawJSONPrimitive]:
+    def values(self) -> FrozenSet[RawJSONPrimitive]:
         """
         Gets the values this property takes.
 
         :return:    The set of values.
         """
-        return self._values.copy()
+        return self._values
