@@ -127,6 +127,10 @@ class JSONObject(JSONValidatedBiserialisable[SelfType], StaticJSONValidator):
         :param name:    The property name.
         :return:        The raw JSON.
         """
+        # Avoid unnecessary copying if the default is a serialisable
+        if name not in self._property_values:
+            return self._get_property(name).default_as_raw_json
+
         # Get the value
         value = self.get_property(name)
 

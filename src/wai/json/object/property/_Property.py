@@ -2,10 +2,10 @@ from abc import ABC, abstractmethod
 from typing import Any, Optional
 
 from ...error import JSONPropertyError
-from ...raw import deep_copy
+from ...raw import deep_copy, RawJSONElement
 from ...serialise import JSONValidatedBiserialisable
 from ...validator import StaticJSONValidator
-from .._typing import PropertyValueType, Absent
+from .._typing import PropertyValueType, Absent, OptionallyPresent
 
 
 class Property(StaticJSONValidator, ABC):
@@ -78,6 +78,16 @@ class Property(StaticJSONValidator, ABC):
             return self._default.json_copy(False)
         else:
             return deep_copy(self._default)
+
+    @property
+    def default_as_raw_json(self) -> OptionallyPresent[RawJSONElement]:
+        """
+        Gets the default value as raw JSON.
+        """
+        if isinstance(self._default, JSONValidatedBiserialisable):
+            return self._default.to_raw_json(False)
+        else:
+            return self.default
 
     @property
     def has_default(self) -> bool:
