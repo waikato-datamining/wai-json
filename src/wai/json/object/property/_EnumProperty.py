@@ -2,6 +2,7 @@ from typing import Iterable, Optional, FrozenSet
 
 from ...raw import RawJSONPrimitive
 from ...schema import enum
+from .._typing import PropertyValueType, Absent
 from ._RawProperty import RawProperty
 
 
@@ -13,14 +14,16 @@ class EnumProperty(RawProperty):
                  name: Optional[str] = None,
                  *,
                  values: Iterable[RawJSONPrimitive] = tuple(),
-                 optional: bool = False):
+                 optional: bool = False,
+                 default: PropertyValueType = Absent):
         # Consume the iterable
         self._values: FrozenSet[RawJSONPrimitive] = frozenset(values)
 
         super().__init__(
             name,
             schema=enum(*self._values),
-            optional=optional
+            optional=optional,
+            default=default
         )
 
     @property

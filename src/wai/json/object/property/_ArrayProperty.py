@@ -1,6 +1,6 @@
 from typing import Optional, Any
 
-from .._typing import PropertyValueType
+from .._typing import PropertyValueType, Absent
 from .proxies import ArrayProxy
 from ._Property import Property
 from ._ProxyProperty import ProxyProperty
@@ -18,16 +18,16 @@ class ArrayProperty(ProxyProperty):
                  min_elements: int = 0,
                  max_elements: Optional[int] = None,
                  unique_elements: bool = False,
-                 optional: bool = False):
-        # Create a closure class to proxy the array
-
+                 optional: bool = False,
+                 default: PropertyValueType = Absent):
         super().__init__(
             name,
             proxy=ArrayProxy.specify(element_property,
                                      min_elements,
                                      max_elements,
                                      unique_elements),
-            optional=optional
+            optional=optional,
+            default=default
         )
 
     def _validate_value(self, value: Any) -> PropertyValueType:

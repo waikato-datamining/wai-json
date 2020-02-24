@@ -1,5 +1,6 @@
 from typing import Type, Optional
 
+from .._typing import PropertyValueType, Absent
 from ._ProxyProperty import ProxyProperty
 
 
@@ -11,7 +12,8 @@ class JSONObjectProperty(ProxyProperty):
                  name: Optional[str] = None,
                  object_type: Optional[Type['JSONObject']] = None,
                  *,
-                 optional: bool = False):
+                 optional: bool = False,
+                 default: PropertyValueType = Absent):
         # Have to local-import JSONObject to avoid circular reference
         from .._JSONObject import JSONObject
 
@@ -22,7 +24,8 @@ class JSONObjectProperty(ProxyProperty):
         super().__init__(
             name,
             proxy=object_type,
-            optional=optional
+            optional=optional,
+            default=default
         )
 
     @property

@@ -1,6 +1,6 @@
 from typing import Optional, Any
 
-from .._typing import PropertyValueType
+from .._typing import PropertyValueType, Absent
 from .proxies import MapProxy
 from ._Property import Property
 from ._ProxyProperty import ProxyProperty
@@ -15,11 +15,13 @@ class MapProperty(ProxyProperty):
                  name: Optional[str] = None,
                  value_property: Property = RawProperty(),
                  *,
-                 optional: bool = False):
+                 optional: bool = False,
+                 default: PropertyValueType = Absent):
         super().__init__(
             name,
             proxy=MapProxy.specify(value_property),
-            optional=optional
+            optional=optional,
+            default=default
         )
 
     def _validate_value(self, value: Any) -> PropertyValueType:

@@ -16,7 +16,8 @@ class OfProperty(Property, ABC):
                  sub_properties: Iterable[Property] = tuple(),
                  *,
                  schema_function: Callable[[Iterable[JSONSchema]], JSONSchema] = None,  # one_of/any_of/all_of
-                 optional: bool = False):
+                 optional: bool = False,
+                 default: PropertyValueType = Absent):
         # Consume the sub-properties
         sub_properties = tuple(sub_properties)
 
@@ -30,13 +31,14 @@ class OfProperty(Property, ABC):
                 raise OptionalDisallowed(f"Can't use optional properties as sub-properties to any of the"
                                          f"'of' property variations")
 
-        super().__init__(
-            name,
-            optional=optional
-        )
-
         self._sub_properties: Tuple[Property] = sub_properties
         self._schema_function = schema_function
+
+        super().__init__(
+            name,
+            optional=optional,
+            default=default
+        )
 
     def _get_json_validation_schema(self) -> JSONSchema:
         return self._schema_function(

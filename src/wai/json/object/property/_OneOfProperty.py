@@ -2,6 +2,7 @@ from typing import List, Iterable, Optional
 
 from ...error import OfPropertySelectionError
 from ...schema import one_of
+from .._typing import PropertyValueType, Absent
 from ._OfProperty import OfProperty
 from ._Property import Property
 
@@ -15,12 +16,14 @@ class OneOfProperty(OfProperty):
                  name: Optional[str] = None,
                  sub_properties: Iterable[Property] = tuple(),
                  *,
-                 optional: bool = False):
+                 optional: bool = False,
+                 default: PropertyValueType = Absent):
         super().__init__(
             name,
             sub_properties,
             schema_function=one_of,
-            optional=optional
+            optional=optional,
+            default=default
         )
 
     @classmethod

@@ -2,6 +2,7 @@ from typing import Optional
 
 from ...raw import RawJSONNumber
 from ...schema import number
+from .._typing import PropertyValueType, Absent
 from ._RawProperty import RawProperty
 
 
@@ -18,7 +19,8 @@ class NumberProperty(RawProperty):
                  multiple_of: Optional[RawJSONNumber] = None,
                  exclusive_minimum: bool = False,
                  exclusive_maximum: bool = False,
-                 optional: bool = False):
+                 optional: bool = False,
+                 default: PropertyValueType = Absent):
         super().__init__(
             name,
             schema=number(
@@ -29,5 +31,6 @@ class NumberProperty(RawProperty):
                 exclusive_minimum,
                 exclusive_maximum
             ),
-            optional=optional
+            optional=optional,
+            default=default
         )

@@ -2,6 +2,8 @@ from abc import ABC, abstractmethod
 from typing import Any, Optional
 
 from ...error import JSONPropertyError
+from ...raw import deep_copy
+from ...serialise import JSONValidatedBiserialisable
 from ...validator import StaticJSONValidator
 from .._typing import PropertyValueType, Absent
 
@@ -17,7 +19,8 @@ class Property(StaticJSONValidator, ABC):
     def __init__(self,
                  name: Optional[str] = None,  # Default tells the property to inherit its attribute name
                  *,
-                 optional: bool = False):
+                 optional: bool = False,
+                 default: PropertyValueType = Absent):
         # Can't use the empty string as a name
         if name == "":
             raise JSONPropertyError("Can't name properties with the empty string")
@@ -25,6 +28,24 @@ class Property(StaticJSONValidator, ABC):
         self._name: str = name if name is not None else ""
         self._attribute_name: str = ""
         self._optional: bool = optional
+
+        # Validate the default value
+        validated_default = Absent
+        if optional:
+            validated_default = self.validate_value(default)
+
+        # Can only change the default value if the property is optional
+        elif default is not Absent:
+            raise JSONPropertyError("Can't set default values for required properties")
+
+        # Save a copy of the default value, unless it is absent or
+        # validation already created a new object
+        self._default: PropertyValueType = (
+            Absent if default is Absent else
+            validated_default if validated_default is not default else
+            validated_default.json_copy(False) if isinstance(validated_default, JSONValidatedBiserialisable) else
+            deep_copy(validated_default)
+        )
 
     @property
     def name(self) -> str:
@@ -41,6 +62,22 @@ class Property(StaticJSONValidator, ABC):
         Whether this property is an optional property.
         """
         return self._optional
+
+    @property
+    def default(self) -> PropertyValueType:
+        """
+        Gets the default value for this property.
+        """
+        # Can't get the default of a required property
+        if not self.is_optional:
+            raise AttributeError(f"Required property '{self.name}' has no default value")
+
+        if self._default is Absent:
+            return Absent
+        elif isinstance(self._default, JSONValidatedBiserialisable):
+            return self._default.json_copy(False)
+        else:
+            return deep_copy(self._default)
 
     def __get__(self, instance, owner):
         # If accessed from the class, return the property itself

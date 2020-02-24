@@ -118,7 +118,7 @@ class JSONObject(JSONValidatedBiserialisable[SelfType], StaticJSONValidator):
         if name in self._property_values:
             return self._property_values[name]
 
-        return Absent
+        return self._get_property(name).default
 
     def get_property_as_raw_json(self, name: str) -> OptionallyPresent[RawJSONElement]:
         """
