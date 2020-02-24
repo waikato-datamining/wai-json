@@ -79,6 +79,13 @@ class Property(StaticJSONValidator, ABC):
         else:
             return deep_copy(self._default)
 
+    @property
+    def has_default(self) -> bool:
+        """
+        Whether this property has a default value set.
+        """
+        return self._default is not Absent
+
     def __get__(self, instance, owner):
         # If accessed from the class, return the property itself
         if instance is None:
