@@ -195,7 +195,7 @@ class JSONObject(JSONValidatedBiserialisable[SelfType], StaticJSONValidator):
             yield name
 
         # Optional properties
-        for name in self._required_properties:
+        for name in self._optional_properties:
             yield name
 
         # Additional properties (if called on the instance)
