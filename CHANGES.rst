@@ -1,7 +1,7 @@
 Changelog
 =========
 
-0.0.3 (2020-??-??)
+0.0.3 (2020-02-26)
 -------------------
 
 - EnumProperty now returns its values as a frozen-set to avoid copy operation.
