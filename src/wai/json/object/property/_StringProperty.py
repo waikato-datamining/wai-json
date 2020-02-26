@@ -1,7 +1,7 @@
 from typing import Optional
 
 from ...schema import string_schema
-from .._typing import PropertyValueType, Absent
+from .._typing import PropertyValueType, Absent, OptionallyPresent
 from ._RawProperty import RawProperty
 
 
@@ -17,7 +17,7 @@ class StringProperty(RawProperty):
                  pattern: Optional[str] = None,
                  format: Optional[str] = None,
                  optional: bool = False,
-                 default: PropertyValueType = Absent):
+                 default: OptionallyPresent[PropertyValueType] = Absent):
         super().__init__(
             name,
             schema=string_schema(

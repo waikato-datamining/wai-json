@@ -57,4 +57,4 @@ E.g. a: OptionallyPresent[int] = |any int or Absent|
 
 
 # The type of values a property can take
-PropertyValueType = OptionallyPresent[Union[RawJSONElement, JSONValidatedBiserialisable]]
+PropertyValueType = Union[RawJSONElement, JSONValidatedBiserialisable]

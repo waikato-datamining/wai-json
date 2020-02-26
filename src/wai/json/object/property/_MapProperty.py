@@ -1,6 +1,6 @@
 from typing import Optional, Any
 
-from .._typing import PropertyValueType, Absent
+from .._typing import PropertyValueType, Absent, OptionallyPresent
 from .proxies import MapProxy
 from ._Property import Property
 from ._ProxyProperty import ProxyProperty
@@ -16,7 +16,7 @@ class MapProperty(ProxyProperty):
                  value_property: Property = RawProperty(),
                  *,
                  optional: bool = False,
-                 default: PropertyValueType = Absent):
+                 default: OptionallyPresent[PropertyValueType] = Absent):
         super().__init__(
             name,
             proxy=MapProxy.specify(value_property),

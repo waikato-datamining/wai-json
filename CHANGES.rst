@@ -6,6 +6,7 @@ Changelog
 
 - EnumProperty now returns its values as a frozen-set to avoid copy operation.
 - Optional properties can now have default values for if they're not specified.
+- Additional methods/options for introspecting/altering properties.
 
 0.0.2 (2020-02-21)
 -------------------

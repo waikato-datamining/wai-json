@@ -2,7 +2,7 @@ from typing import List, Iterable, Optional
 
 from ...error import OfPropertySelectionError
 from ...schema import all_of
-from .._typing import PropertyValueType, Absent
+from .._typing import PropertyValueType, Absent, OptionallyPresent
 from ._OfProperty import OfProperty
 from ._Property import Property
 
@@ -17,7 +17,7 @@ class AllOfProperty(OfProperty):
                  sub_properties: Iterable[Property] = tuple(),
                  *,
                  optional: bool = False,
-                 default: PropertyValueType = Absent):
+                 default: OptionallyPresent[PropertyValueType] = Absent):
         super().__init__(
             name,
             sub_properties,

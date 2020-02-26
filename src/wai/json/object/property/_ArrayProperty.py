@@ -1,6 +1,6 @@
 from typing import Optional, Any
 
-from .._typing import PropertyValueType, Absent
+from .._typing import PropertyValueType, Absent, OptionallyPresent
 from .proxies import ArrayProxy
 from ._Property import Property
 from ._ProxyProperty import ProxyProperty
@@ -19,7 +19,7 @@ class ArrayProperty(ProxyProperty):
                  max_elements: Optional[int] = None,
                  unique_elements: bool = False,
                  optional: bool = False,
-                 default: PropertyValueType = Absent):
+                 default: OptionallyPresent[PropertyValueType] = Absent):
         super().__init__(
             name,
             proxy=ArrayProxy.specify(element_property,

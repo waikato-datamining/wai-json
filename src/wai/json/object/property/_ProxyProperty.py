@@ -6,7 +6,7 @@ from wai.common.abc import is_abstract_class
 from ...error import JSONPropertyError
 from ...schema import JSONSchema
 from ...serialise import JSONValidatedBiserialisable
-from .._typing import PropertyValueType, Absent
+from .._typing import PropertyValueType, Absent, OptionallyPresent
 from ._Property import Property
 
 
@@ -20,7 +20,7 @@ class ProxyProperty(Property, ABC):
                  *,
                  proxy: Type[JSONValidatedBiserialisable] = JSONValidatedBiserialisable,
                  optional: bool = False,
-                 default: PropertyValueType = Absent):
+                 default: OptionallyPresent[PropertyValueType] = Absent):
         # Type argument must be concrete
         if is_abstract_class(proxy):
             raise JSONPropertyError(f"Proxy type argument must be a concrete class, got {proxy.__name__}")

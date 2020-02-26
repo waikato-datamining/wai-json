@@ -1,5 +1,5 @@
 from enum import Enum, auto
-from typing import Dict, TypeVar, List, Any, Union, Optional, Iterator
+from typing import Dict, TypeVar, List, Any, Union, Optional, Iterator, Tuple
 
 from wai.common.meta import instanceoptionalmethod
 from wai.common.meta.dynamic_defaults import with_dynamic_defaults, dynamic_default
@@ -88,51 +88,71 @@ class JSONObject(JSONValidatedBiserialisable[SelfType], StaticJSONValidator):
             self.set_property(name, value)
 
     @instanceoptionalmethod
-    def has_property(self, name: str) -> bool:
+    def has_property(self, name: str, *,
+                     require_value: bool = False) -> bool:
         """
         Whether this object has a property with the given name. If the object
         allows additional properties, this will include additional properties
         which currently have values, and required/optional properties regardless
         of value.
 
-        :param name:    The property name.
-        :return:        True if the object has the property.
+        :param name:            The property name.
+        :param require_value:   Whether properties without values should be regarded
+                                as valid. Only available on instances.
+        :return:                True if the object has the property.
         """
-        # If called on the class, only corresponds to defined properties
-        has_property = name in self._required_properties or name in self._optional_properties
+        # If called on the class, we can't require a value
+        if not instanceoptionalmethod.is_instance(self):
+            if require_value:
+                raise JSONPropertyError(f"Can't require a value without an instance")
 
-        # If called on the instance, also check if an additional property has the name
-        if instanceoptionalmethod.is_instance(self):
-            has_property = has_property or name in self._property_values
+        # If called on an instance, check for values
+        else:
+            # If it has a value, it's always present
+            if name in self._property_values:
+                return True
 
-        return has_property
+            # If a value is required but missing, it's not considered present
+            if require_value:
+                return False
 
-    def get_property(self, name: str) -> PropertyValueType:
+        # In all other cases, the property must be defined
+        return name in self._required_properties or name in self._optional_properties
+
+    def get_property(self, name: str, *,
+                     bypass_default: bool = False) -> OptionallyPresent[PropertyValueType]:
         """
         Gets the value of a property by name.
 
-        :param name:    The name of the property.
-        :return:        The property's value.
+        :param name:            The name of the property.
+        :param bypass_default:  Whether to return Absent instead of the default value.
+        :return:                The property's value.
         """
         # Get the property's value if we have one
         if name in self._property_values:
             return self._property_values[name]
 
+        # If we don't want the default value, return Absent
+        if bypass_default:
+            return Absent
+
         return self._get_property(name).default
 
-    def get_property_as_raw_json(self, name: str) -> OptionallyPresent[RawJSONElement]:
+    def get_property_as_raw_json(self, name: str, *,
+                                 bypass_default: bool = False) -> OptionallyPresent[RawJSONElement]:
         """
         Gets the value of a property as raw JSON.
 
-        :param name:    The property name.
-        :return:        The raw JSON.
+        :param name:            The property name.
+        :param bypass_default:  Whether to return Absent instead of the default value.
+        :return:                The raw JSON, or Absent if the property has no value.
         """
         # Avoid unnecessary copying if the default is a serialisable
         if name not in self._property_values:
             return self._get_property(name).default_as_raw_json
 
         # Get the value
-        value = self.get_property(name)
+        value = self.get_property(name, bypass_default=bypass_default)
 
         # If it's a serialisable type, serialise it
         if isinstance(value, JSONValidatedBiserialisable):
@@ -140,7 +160,7 @@ class JSONObject(JSONValidatedBiserialisable[SelfType], StaticJSONValidator):
 
         return value
 
-    def set_property(self, name: str, value: PropertyValueType):
+    def set_property(self, name: str, value: OptionallyPresent[PropertyValueType]):
         """
         Sets the value of a property by name.
 
@@ -183,7 +203,7 @@ class JSONObject(JSONValidatedBiserialisable[SelfType], StaticJSONValidator):
                 PropertyOptionality.REQUIRED)
 
     @instanceoptionalmethod
-    def iterate_properties(self) -> Iterator[str]:
+    def properties(self) -> Iterator[str]:
         """
         Iterates through all properties of the object, including additional
         properties if called on the instance.
@@ -203,6 +223,34 @@ class JSONObject(JSONValidatedBiserialisable[SelfType], StaticJSONValidator):
             for name in self._property_values:
                 if name not in self._required_properties and name not in self._optional_properties:
                     yield name
+
+    def values(self, *,
+               bypass_default: bool = False,
+               include_absent: bool = False) -> Iterator[OptionallyPresent[PropertyValueType]]:
+        """
+        Iterates over the values of all properties in the object.
+
+        :param bypass_default:  Whether to bypass default values
+        :param include_absent:  Whether to include absent values.
+        :return:                An iterator over the property values.
+        """
+        return (value for name, value in self.items(bypass_default=bypass_default,
+                                                    include_absent=include_absent))
+
+    def items(self, *,
+              bypass_default: bool = False,
+              include_absent: bool = False) -> Iterator[Tuple[str, OptionallyPresent[PropertyValueType]]]:
+        """
+        Iterates through all properties in this object.
+
+        :param bypass_default:  Whether to bypass default values
+        :param include_absent:  Whether to include absent values.
+        :return:                An iterator of name, value pairs for the properties.
+        """
+        for name in self.properties():
+            value = self.get_property(name, bypass_default=bypass_default)
+            if include_absent or value is not Absent:
+                yield name, value
 
     @classmethod
     def allows_additional_properties(cls) -> bool:
@@ -243,11 +291,20 @@ class JSONObject(JSONValidatedBiserialisable[SelfType], StaticJSONValidator):
         raise JSONPropertyError(f"JSONObject '{cls.__name__}' has no property '{name}', "
                                 f"and doesn't allow additional properties")
 
-    def __getitem__(self, item: str) -> PropertyValueType:
+    def __getitem__(self, item: str) -> OptionallyPresent[PropertyValueType]:
         return self.get_property(item)
 
-    def __setitem__(self, key: str, value: PropertyValueType):
+    def __setitem__(self, key: str, value: OptionallyPresent[PropertyValueType]):
         self.set_property(key, value)
+
+    def __delitem__(self, key: str):
+        self.delete_property(key)
+
+    def __contains__(self, item: str) -> bool:
+        return self.has_property(item)
+
+    def __iter__(self):
+        return self.properties()
 
     def _serialise_to_raw_json(self) -> RawJSONObject:
         return {name: self.get_property_as_raw_json(name)

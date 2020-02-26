@@ -2,7 +2,7 @@ from typing import Optional
 
 from ...raw import RawJSONPrimitive
 from ...schema import constant
-from .._typing import PropertyValueType, Absent
+from .._typing import PropertyValueType, Absent, OptionallyPresent
 from ._RawProperty import RawProperty
 
 
@@ -15,7 +15,7 @@ class ConstantProperty(RawProperty):
                  value: RawJSONPrimitive = None,
                  *,
                  optional: bool = False,
-                 default: PropertyValueType = Absent):
+                 default: OptionallyPresent[PropertyValueType] = Absent):
         self._value = value
 
         super().__init__(

@@ -20,7 +20,7 @@ class Property(StaticJSONValidator, ABC):
                  name: Optional[str] = None,  # Default tells the property to inherit its attribute name
                  *,
                  optional: bool = False,
-                 default: PropertyValueType = Absent):
+                 default: OptionallyPresent[PropertyValueType] = Absent):
         # Can't use the empty string as a name
         if name == "":
             raise JSONPropertyError("Can't name properties with the empty string")
@@ -40,7 +40,7 @@ class Property(StaticJSONValidator, ABC):
 
         # Save a copy of the default value, unless it is absent or
         # validation already created a new object
-        self._default: PropertyValueType = (
+        self._default: OptionallyPresent[PropertyValueType] = (
             Absent if default is Absent else
             validated_default if validated_default is not default else
             validated_default.json_copy(False) if isinstance(validated_default, JSONValidatedBiserialisable) else
@@ -64,7 +64,7 @@ class Property(StaticJSONValidator, ABC):
         return self._optional
 
     @property
-    def default(self) -> PropertyValueType:
+    def default(self) -> OptionallyPresent[PropertyValueType]:
         """
         Gets the default value for this property.
         """
@@ -154,7 +154,7 @@ class Property(StaticJSONValidator, ABC):
             raise JSONPropertyError(f"Can only {method} value from a property "
                                     f"if called from a JSON object")
 
-    def validate_value(self, value: Any) -> PropertyValueType:
+    def validate_value(self, value: Any) -> OptionallyPresent[PropertyValueType]:
         """
         Performs property value validation. Should raise an exception if
         validation fails, or return the actual value to store if validation

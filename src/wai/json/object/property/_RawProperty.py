@@ -1,7 +1,7 @@
 from typing import Optional, Any
 
 from ...schema import JSONSchema, TRIVIALLY_FAIL_SCHEMA
-from .._typing import PropertyValueType, Absent
+from .._typing import PropertyValueType, Absent, OptionallyPresent
 from ._Property import Property
 
 
@@ -14,7 +14,7 @@ class RawProperty(Property):
                  *,
                  schema: JSONSchema = TRIVIALLY_FAIL_SCHEMA,
                  optional: bool = False,
-                 default: PropertyValueType = Absent):
+                 default: OptionallyPresent[PropertyValueType] = Absent):
         self._schema = schema
 
         super().__init__(name, optional=optional, default=default)

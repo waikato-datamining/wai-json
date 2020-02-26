@@ -1,6 +1,6 @@
 from typing import Type, Optional
 
-from .._typing import PropertyValueType, Absent
+from .._typing import PropertyValueType, Absent, OptionallyPresent
 from ._ProxyProperty import ProxyProperty
 
 
@@ -13,7 +13,7 @@ class JSONObjectProperty(ProxyProperty):
                  object_type: Optional[Type['JSONObject']] = None,
                  *,
                  optional: bool = False,
-                 default: PropertyValueType = Absent):
+                 default: OptionallyPresent[PropertyValueType] = Absent):
         # Have to local-import JSONObject to avoid circular reference
         from .._JSONObject import JSONObject
 

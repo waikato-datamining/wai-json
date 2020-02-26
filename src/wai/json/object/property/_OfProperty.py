@@ -3,7 +3,7 @@ from typing import Tuple, List, Iterable, Callable, Optional, Any
 
 from ...error import JSONPropertyError, OptionalDisallowed, OfPropertySelectionError
 from ...schema import JSONSchema
-from .._typing import Absent, PropertyValueType
+from .._typing import Absent, PropertyValueType, OptionallyPresent
 from ._Property import Property
 
 
@@ -17,7 +17,7 @@ class OfProperty(Property, ABC):
                  *,
                  schema_function: Callable[[Iterable[JSONSchema]], JSONSchema] = None,  # one_of/any_of/all_of
                  optional: bool = False,
-                 default: PropertyValueType = Absent):
+                 default: OptionallyPresent[PropertyValueType] = Absent):
         # Consume the sub-properties
         sub_properties = tuple(sub_properties)
 
