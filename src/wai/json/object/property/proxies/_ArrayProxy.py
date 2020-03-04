@@ -218,9 +218,10 @@ class ArrayProxy(StaticJSONValidator, JSONValidatedBiserialisable['ArrayProxy'],
         # TODO: Implement
         raise NotImplementedError(ArrayProxy.__gt__.__qualname__)
 
-    def __iadd__(self, x: Iterable):
+    def __iadd__(self, x: Iterable) -> 'ArrayProxy':
         for value in x:
             self.append(value)
+        return self
 
     def __imul__(self, *args, **kwargs):
         # TODO: Implement

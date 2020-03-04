@@ -1,6 +1,11 @@
 Changelog
 =========
 
+0.0.4 (2020-03-??)
+-------------------
+
+- Fixed bug in ArrayProxy where __iadd__ wasn't returning itself.
+
 0.0.3 (2020-02-26)
 -------------------
 
