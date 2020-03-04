@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from sys import maxsize
 from typing import Iterable, Optional, List, Callable, Any, Iterator, Type
 
 from ....error import JSONError, OptionalDisallowed
@@ -160,7 +161,7 @@ class ArrayProxy(StaticJSONValidator, JSONValidatedBiserialisable['ArrayProxy'],
         for value in iterable:
             self.append(value)
 
-    def index(self, value, start: int = 0, stop: int = -1) -> int:
+    def index(self, value, start: int = 0, stop: int = maxsize) -> int:
         value = self.element_property().validate_value(value)
         return self._values.index(value, start, stop)
 
@@ -189,7 +190,7 @@ class ArrayProxy(StaticJSONValidator, JSONValidatedBiserialisable['ArrayProxy'],
         self._values.reverse()
 
     def sort(self, *,
-             key: Optional[Callable[[Any], Any]] = lambda k: k,
+             key: Optional[Callable[[Any], Any]] = None,
              reverse: bool = False):
         self._values.sort(key=key, reverse=reverse)
 

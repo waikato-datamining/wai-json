@@ -5,6 +5,7 @@ Changelog
 -------------------
 
 - Fixed bug in ArrayProxy where __iadd__ wasn't returning itself.
+- Fixed default values for list methods of ArrayProxy.
 
 0.0.3 (2020-02-26)
 -------------------
