@@ -1,6 +1,11 @@
 Changelog
 =========
 
+0.0.5 (2020-??-??)
+-------------------
+
+- Removed unnecessary validation from sub-components of objects which already validate themselves.
+
 0.0.4 (2020-03-04)
 -------------------
 

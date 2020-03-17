@@ -139,12 +139,14 @@ class JSONObject(JSONValidatedBiserialisable[SelfType], StaticJSONValidator):
         return self._get_property(name).default
 
     def get_property_as_raw_json(self, name: str, *,
-                                 bypass_default: bool = False) -> OptionallyPresent[RawJSONElement]:
+                                 bypass_default: bool = False,
+                                 validate: bool = True) -> OptionallyPresent[RawJSONElement]:
         """
         Gets the value of a property as raw JSON.
 
         :param name:            The property name.
         :param bypass_default:  Whether to return Absent instead of the default value.
+        :param validate:        Whether to validate the serialised JSON.
         :return:                The raw JSON, or Absent if the property has no value.
         """
         # Avoid unnecessary copying if the default is a serialisable
@@ -156,7 +158,7 @@ class JSONObject(JSONValidatedBiserialisable[SelfType], StaticJSONValidator):
 
         # If it's a serialisable type, serialise it
         if isinstance(value, JSONValidatedBiserialisable):
-            value = value.to_raw_json()
+            value = value.to_raw_json(validate)
 
         return value
 
@@ -307,7 +309,7 @@ class JSONObject(JSONValidatedBiserialisable[SelfType], StaticJSONValidator):
         return self.properties()
 
     def _serialise_to_raw_json(self) -> RawJSONObject:
-        return {name: self.get_property_as_raw_json(name)
+        return {name: self.get_property_as_raw_json(name, validate=False)
                 for name in self._property_values}
 
     @classmethod

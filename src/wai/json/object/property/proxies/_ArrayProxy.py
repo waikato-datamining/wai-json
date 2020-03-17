@@ -96,7 +96,7 @@ class ArrayProxy(StaticJSONValidator, JSONValidatedBiserialisable['ArrayProxy'],
         return ClosureArrayProxy
 
     def _serialise_to_raw_json(self) -> RawJSONElement:
-        return [value.to_raw_json() if isinstance(value, JSONValidatedBiserialisable) else value
+        return [value.to_raw_json(False) if isinstance(value, JSONValidatedBiserialisable) else value
                 for value in self._values]
 
     @classmethod

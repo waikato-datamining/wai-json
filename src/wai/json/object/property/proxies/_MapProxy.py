@@ -47,7 +47,7 @@ class MapProxy(StaticJSONValidator, JSONValidatedBiserialisable['MapProxy'], ABC
         return ClosureMapProxy
 
     def _serialise_to_raw_json(self) -> RawJSONElement:
-        return {key: value.to_raw_json() if isinstance(value, JSONValidatedBiserialisable) else value
+        return {key: value.to_raw_json(False) if isinstance(value, JSONValidatedBiserialisable) else value
                 for key, value in self._values.items()}
 
     @classmethod
