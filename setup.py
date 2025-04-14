@@ -13,7 +13,7 @@ def _read(f) -> bytes:
 
 
 setup(
-    name="wai.json",
+    name="wai_json",
     description="Python library for working with JSON and JSON schema.",
     long_description=(
         _read('DESCRIPTION.rst') + b'\n' +
@@ -30,10 +30,7 @@ setup(
         '': 'src'
     },
     packages=find_namespace_packages(where="src"),
-    namespace_packages=[
-        "wai"
-    ],
-    version="0.0.5",
+    version="0.0.6",
     author='Corey Sterling',
     author_email='coreytsterling@gmail.com',
     install_requires=[
